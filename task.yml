@@ -1,0 +1,18 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: "get hosts that have blockdevice"
+      shell: "oc get bd -n openebs --sort-by='.metadata.labels.kubernetes\\io/hostname' --no-headers | awk '{print $2}' | uniq"
+      register: bdhosts
+    
+    - name: "get bd per host"
+      shell: "oc get bd -n openebs --no-headers | grep {{item}} | grep -iv inactive | awk '{print $1}'"
+      loop: "{{bdhosts.stdout_lines}}"
+      register: blockdevices
+
+    - name: create pool
+      template:
+        src: pool.yml.j2
+        dest: pool.yml
