@@ -1,0 +1,18 @@
+apiVersion: cstor.openebs.io/v1
+kind: CStorPoolCluster
+metadata:
+  name: mypool
+  namespace: openebs
+spec:
+  pools:
+  {% for result in blockdevices.results %}
+- dataRaidGroups:
+    - blockDevices:
+  {% for line in result.stdout_lines %}
+      - blockDeviceName: "{{ line }}"
+  {% endfor %}
+    nodeSelector:
+        kubernetes.io/hostname: "{{ result.item }}"
+    poolConfig:
+      dataRaidGroupType: "stripe"
+  {% endfor %}
